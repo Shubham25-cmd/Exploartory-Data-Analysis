@@ -1,0 +1,13 @@
+library(ggplot2)
+NEI <- readRDS("summarySCC_PM25.rds")
+SCC <- readRDS("Source_Classification_Code.rds")
+coal <- subset(SCC,subset = grepl("Coal$",SCC.Level.Three))
+coal1 <- merge(NEI,coal,by = "SCC")
+coal1 <- coal1[,c("Emissions","type","year")]
+coal_point <- subset(coal1,type=="POINT",select = c("Emissions","type","year"))
+coal_nonp <- subset(coal1,type=="NONPOINT",select = c("Emissions","type","year"))
+g <- data.frame("Years" = rep(c(1999,2002,2005,2008),2), "Type" = c(rep("POINT",4),rep("NONPOINT",4)))
+g <- g %>% mutate("EMISSIONS" = c(sum(coal_point$Emissions[coal_point$year==1999]),sum(coal_point$Emissions[coal_point$year==2002]),sum(coal_point$Emissions[coal_point$year==2005]),sum(coal_point$Emissions[coal_point$year==2008]),sum(coal_nonp$Emissions[coal_nonp$year==1999]),sum(coal_nonp$Emissions[coal_nonp$year==2002]),sum(coal_nonp$Emissions[coal_nonp$year==2005]),sum(coal_nonp$Emissions[coal_nonp$year==2008])))
+png('plot3.png')
+g %>% ggplot(aes(Years,EMISSIONS, color = Type)) + geom_point() + geom_line() + xlab("YEARS") +ylab("Total Emission (in tons)") + facet_wrap("Type") + ggtitle("Emissions from coal combustion-related sources")
+dev.off()
